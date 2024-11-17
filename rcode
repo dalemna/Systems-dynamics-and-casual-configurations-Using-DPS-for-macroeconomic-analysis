@@ -1,0 +1,1148 @@
+####Document provide the R script for the paper working paper - 
+#####Using Dynamic Pattern Synthesis for Comparative Macro-Economic Research (Alemna, D  and Haynes, P).
+
+####LAYOUT####
+
+# 1. Setting working directory and loading data 
+# 2. Cluster Analysis 2000 
+# 3. Robustness (Correlation)
+# 4. Cluster Analysis 2008
+# 5. Robustness (Correlation)
+# 6. Cluster Analysis 2015
+# 7. Robustness (Correlation)
+# 8. Comparing dendrograms across time points
+
+###### 1. Setting working directory and loading data ######
+
+# Clear your workspace before starting to work
+
+rm(list = ls())
+
+# Set your Working directory where your data and everything you produce will be stored
+# Display curre?tly set working directory
+
+getwd() 
+
+# Set your working directory with setwd("").
+# copy-paste the whole path from the console below into the R script (editor)
+
+#setwd("C:/Users/xxxxx/Desktop/Using Cluster Pattern Synthesis for Macroeconomic Evaluations and Public Polcuy Analysis/DPS")
+
+# Display the content of the current working directory:
+
+dir() 
+
+
+#install.packages(c("cluster","ade4", "vegan", "labdsv", "RColorBrewer", "gclus", "factoextra", "car", "magrittr", "dendextend", "corrplot", "igraph", "gplots", "pheatmap"), dependencies = TRUE)
+# Install Packages
+#install.packages("cluster")
+#install.packages("ade4")
+#install.packages("vegan")
+#install.packages("labdsv")
+#install.packages("RColorBrewer")
+#install.packages("gclus")
+#install.packages("factoextra")
+#install.packages("car")
+#install.packages("magrittr")
+#install.packages("dendextend")
+#install.packages("corrplot")
+#install.packages("igraph")
+#install.packages("gplots")
+#install.packages("pheatmap")
+
+
+#Load Packages
+library(cluster); 
+
+library(ade4); 
+
+library(vegan); 
+
+library(labdsv); 
+
+library(RColorBrewer)
+
+library(gclus)
+
+library(factoextra)
+
+library(car)
+
+library(magrittr)
+
+library(dendextend)
+
+library(corrplot)
+
+library(igraph)
+
+library(gplots)
+
+library(pheatmap)
+
+
+
+##Load Data saved work space##
+load("analysis_saved.RData")
+
+
+# Read CV file
+
+#HCA2000 <- read.csv("2000.csv", row.names=1, header = TRUE)
+
+#HCA2008 <- read.csv("2008.csv", row.names=1, header = TRUE)
+
+#HCA2015 <- read.csv("2015.csv", row.names=1, header = TRUE)
+
+#omit missing data
+HCA2000 <- na.omit (HCA2000)
+
+HCA2008 <- na.omit (HCA2008)
+
+HCA2015 <- na.omit (HCA2015)
+
+
+######### standardize variables ##########
+
+HCA2000Scaled <- scale(HCA2000)
+
+HCA2008Scaled <- scale(HCA2008)
+
+HCA2015Scaled <- scale(HCA2015)
+
+
+
+#Compute the dissimilarity matrix
+
+res.dist2000 <- dist(HCA2000Scaled, method = "euclidean")
+
+res.dist2008 <- dist(HCA2008Scaled, method = "euclidean")
+
+res.dist2015 <- dist(HCA2015Scaled, method = "euclidean")
+
+
+
+#Linkage
+res.hc2000 <- hclust(d = res.dist2000, method = "ward.D2")
+
+res.hc2008 <- hclust(d = res.dist2008, method = "ward.D2")
+
+res.hc2015 <- hclust(d = res.dist2015, method = "ward.D2")
+
+
+
+
+#######CLUSTER ANALYSIS FOR 2000##### 
+
+#log outputs - This saves the output in a text doc 
+
+#sink("Outputs2000_HCAFinal.log", append=TRUE, split=TRUE)
+
+#sizex <- function(x){ if (x ==0.1){cat('X = 0.1')} else if (x > 0.1){cat('X is bigger than 0.1 ')} else {cat('X is smaller than 0.1')}}
+
+#x <- 1
+#sizex(x)
+
+
+#simple approach 
+HCA_Dendrogram_2000 <- dist(HCA2000Scaled) #Standardized data with default distance matrix
+fitH2000 <- hclust(HCA_Dendrogram_2000 , "ward.D2") #cluster using wards method
+plot(fitH2000, hang=-1) #plot cdendrogram 
+abline(h= 7.2,v= , col= "blue", lty=5) #Draw line for selected area
+abline(h= 8.2,v= , col= "blue", lty=5) #Draw line for selected area
+rect.hclust(fitH2000, k = 5, border = "red") #select number of clusters and make K
+
+# Cut in 5 groups and color by groups
+fviz_dend(res.hc2000, k = 5, # Cut in four groups
+          cex = 0.5, # label size
+          k_colors = c("#2E9FDF", "#00AFBB", "#E7B800", "#FC4E07"),
+          color_labels_by_k = TRUE, # color labels by groups
+          rect = TRUE # Add rectangle around group
+)  
+
+
+
+## Robustness check - Choosing Number of Cluster Groups Using (Kmeans) ####
+
+# Compute cophentic distance
+res.coph2000 <- cophenetic(res.hc2000)
+
+# Correlation between cophenetic distance and
+# the original distance
+cor(res.dist2000, res.coph2000)
+#The closer the value of the correlation coefficient is to 1, the more accurately the clustering solution reflects your data. 
+#Values above 0.75 are felt to be good.
+
+
+##Number of clusters decided on: 5
+
+
+
+####Cut the dendrogram into different groups####
+# Cut tree into 4 groups
+grp2000 <- cutree(res.hc2000, k = 5)
+
+# Number of members in each cluster
+table(grp2000)
+
+
+# Get the names for cluster members
+rownames(HCA2000)[grp2000 == 1] #1st Cluster 
+rownames(HCA2000)[grp2000 == 2] #2nd Cluster
+rownames(HCA2000)[grp2000 == 3] #3rd Cluster
+rownames(HCA2000)[grp2000 == 4] #4th Cluster
+rownames(HCA2000)[grp2000 == 5] #5th Cluster
+
+#Alternative for viewing cluster members 
+member.HCA2000distHCA <- cutree(res.hc2000,5)#Identify memberships of each cluster
+member.HCA2000distHCA#view membership
+table(member.HCA2000distHCA) #use a table to show the number of members in each cluster
+aggregate(HCA2000Scaled, list(member.HCA2000distHCA), median)#finding median to indicates which variables are playing important roles in eacH cluster
+aggregate(HCA2000, list(member.HCA2000distHCA), mean)#finding mean for actual values to indicates which variables are playing important roles in each cluster
+
+
+#Cut in 5 groups and color by groups
+fviz_dend(res.hc2000, k = 5, # Cut in four groups
+          cex = 0.5, # label size
+          k_colors = c("#2E9FDF", "#00AFBB","#3A9BE4", "#E7B800", "#FC4E07"),
+          color_labels_by_k = TRUE, # color labels by groups
+          rect = TRUE # Add rectangle around groups
+)
+
+#Cluster plot
+#The function f?iz_cluster() [factoextra package] can be used to easily visualize kmeans clusters. 
+#It takes k-means results and the original data as arguments. 
+#In the resulting plot, observations are represented by points, using principal components if the number of v?riables is greater than 2. It's
+
+fviz_cluster(list(data = HCA2000, cluster = grp2000),
+             palette = c("#2E9FDF", "#00AFBB","#3A9BE4", "#E7B800", "#FC4E07"),
+             ellipse.type = "t", # Concentration ellipse
+             repel = TRUE, # Avo?d label overplotting (slow)
+             show.clust.cent = FALSE, ggtheme = theme_minimal())
+
+
+##############Silhouette Analysis############
+
+#use the function eclust() [enhanced clustering, in factoextra]
+
+# Hierarchical clustering
+hc.res2000 <- eclust(HCA2000Scaled, "hclust", k = 5, hc_metric = "euclidean",
+                     hc_method = "ward.D2", graph = FALSE)
+
+
+# Visualize dendrograms
+fviz_dend(hc.res2000, show_labels = FALSE,
+          palette = "jco", as.ggplot = TRUE)
+
+fviz_silhouette(hc.res2000, palette = "jco",
+                ggtheme = theme_classic())
+
+
+#Silhouette information can be extracted as follow:
+# Silhouette information
+
+silinfo2000 <- hc.res2000$silinfo
+
+names(silinfo2000)
+
+
+# Silhouette widths of each observation
+
+head(silinfo2000$widths[, 1:3], 35)
+
+
+silhouette_withs2000 <- head(silinfo2000$widths[, 1:3], 35)
+
+#write.csv(silhouette_withs2000, file = "silhouette_withs2000.csv")#save silhouette_withs
+
+
+# Average silhouette width of each cluster
+
+silinfo2000$clus.avg.widths
+
+silhouette_cluster_withs2000 <- silinfo2000$clus.avg.widths
+
+#write.csv(silhouette_cluster_withs2000, file = "silhouette_cluster_withs2000.csv")
+
+# The total average (mean of all individual silhouette widths)
+silinfo2000$avg.width
+
+# The size of each clusters
+hc.res2000$size
+
+# Silhouette width of observation
+sil2000 <- hc.res2000$silinfo$widths[, 1:3]
+
+# Objects with negative silhouette
+neg_sil_index2000 <- which(sil2000[, 'sil_width'] < 0)
+
+sil2000[neg_sil_index2000, , drop = FALSE]
+
+neg_cases_2000 <- sil2000[neg_sil_index2000, , drop = FALSE]
+
+
+#write.csv(neg_cases_2000, file = "silhouette_neg_cases_2000.csv")
+
+
+
+#######Visualizing Dendrograms#######
+
+# Compute distances and hierarchical clustering
+dd2000 <- dist(scale(HCA2000), method = "euclidean")
+
+hc2000 <- hclust(dd2000, method = "ward.D2")
+
+
+fviz_dend(hc2000, k = 5, # Cut in five groups
+          cex = 0.5, # label size
+          main = "Cluster Dendrogram 2000",
+          xlab = "Cases", ylab = "Distance", sub = "Five (5) Cluster Groups",
+          k_colors = c("#2?9FDF", "#00AFBB", "#9be43a", "#E7B800", "#FC4E07"),
+          color_labels_by_k = TRUE, # color labels by groups
+          rect = TRUE, # Add rectangle around groups
+          rect_border = c("#2E9FDF", "#00AFBB","#9be43a", "#E7B800", "#FC4E07"),
+          rect_fill = TRUE,
+          ggtheme = theme_gray() # Change theme
+)
+
+
+require("igraph")
+fviz_dend(hc2000, k = 5, k_colors = "jco",
+          type = "phylogenic", repel = TRUE) #plot a phylogenic-like tree
+
+
+
+##plotting sub-tree of dendrograms 
+
+# Create a ?lot of the whole dendrogram,
+# and extract the dendrogram data
+
+dend_plot2000 <- fviz_dend(hc2000, k = 5, # Cut in four groups
+                           cex = 0.5, # label size
+                           k_colors = "jco"
+)
+
+dend_data2000 <- attr(dend_plot2000, "dendrogram") # Extract dendrogram data
+
+
+# Cut the dendrogram at height h = 7.5
+dend_cuts2000 <- cut(dend_data2000, h = 7.5)
+
+# Visualize the truncated version containing
+# two branches
+fviz_dend(dend_cuts2000$upper)
+
+
+# Plot subtree 1
+fviz_dend(dend_cuts2000$lower[[1]], main = "Subtree 1") #1st Cluster 
+
+
+# Plot subtree 2
+fviz_dend(dend_cuts2000$lower[[2]], main = "Subtree 2") #2nd Cluster 
+
+# Plot subtree 3
+fviz_dend(dend_cuts2000$lower[[3]], main = "Subtree 2") #3rd Cluster 
+
+# Plot subtree 4
+fviz_dend(dend_cuts2000$lower[[4]], main = "Subtree 2") #4th Cluster 
+
+# Plot subtree 5
+fviz_dend(dend_cuts2000$lower[[5]], main = "Subtree 2") #5th Cluster
+
+
+
+######Using Heatmaps#####
+
+#Enhanced heat maps: heatmap.2()
+library("gplots")
+heatmap.2(HCA2000Scaled, scale = "none", col = bluered(100),
+          trace = "none", density.info = "none")
+
+
+#Alternative Pretty heat maps: pheatmap()
+pheatmap(HCA2000Scaled, cutree_rows = 5)
+
+
+###correlation-based distance methods####
+#2000
+res.dist2000 <- get_dist(HCA2000Scaled,method = "pearson") 
+
+res.dist2000
+fviz_dist(res.dist2000, lab_size = 8)
+
+
+#correlating all variables
+round(cor(HCA2000Scaled), digits = 2)
+
+
+#multiple Scatterplot
+
+library(ggplot2)
+
+pairs(HCA2000Scaled)
+
+
+#improved correlation matrix
+
+#combination of corr?ation coefficients and correlation tests 
+
+library(correlation)
+
+results2000 <- correlation::correlation(HCA2000, include_factors = TRUE, method = "auto")
+
+results2000
+
+summary(results2000)
+
+library(GGally)
+
+ggpairs(HCA2000)
+
+sink()
+
+#######CLUSTER ANALYSIs FOR 2008##### 
+
+#log outputs
+
+#sink("Outputs2008_HCAFinal.log", append=TRUE, split=TRUE)
+
+#sizex <- function(x){if (x ==0.1){cat('X = 0.1')} else if (x > 0.1){cat('X is bigger than 0.1 ')} else {cat('X is smaller than 0.1')}} 
+
+#x <- 1
+#sizex(x)
+
+#simple approach 
+HCA_Dendrogram_2008 <- dist(HCA2008Scaled) #Standardised data with defualt distance matrix
+
+fitH2008 <- hclust(HCA_Dendrogram_2008 , "ward.D2") #cluster using wards method
+
+
+
+plot(fitH2008, hang=-1) #plot cdendrogram 
+
+abline(h= 7.5,v= , col= "blue", lty=5) #Draw line for selected area
+rect.hclust(fitH2008, k = 5, border = "red") #select number of clusters and make K
+
+# Cut in 5 groups and color by groups
+fviz_dend(res.hc2008, k = 5, # Cut in four groups
+          cex = 0.5, # labe? size
+          k_colors = c("#2E9FDF", "#00AFBB", "#E7B800", "#FC4E07"),
+          color_labels_by_k = TRUE, # color labels by groups
+          rect = TRUE # Add rectangle around groups
+)  
+
+
+
+## Robustness check - Choosing Number of Cluster Groups Using ?Kmeans) ####
+
+# Compute cophentic distance
+res.coph2008 <- cophenetic(res.hc2008)
+
+# Correlation between cophenetic distance and
+# the original distance
+cor(res.dist2008, res.coph2008)
+
+##Number of clusters decided on: 5
+
+####Cut the dendrogram into differ?nt groups####
+
+# Cut tree into 4 groups
+grp2008 <- cutree(res.hc2008, k = 5)
+
+# Number of members in each cluster
+table(grp2008)
+
+
+# Get the names for cluster members
+rownames(HCA2008)[grp2008 == 1] #1st Cluster 
+rownames(HCA2008)[grp2008 == 2] #2nd Cluste?
+rownames(HCA2008)[grp2008 == 3] #3rd Cluster
+rownames(HCA2008)[grp2008 == 4] #4th Cluster
+rownames(HCA2008)[grp2008 == 5] #5th Cluster
+
+#Alternative for viewing cluster members 
+member.HCA2008distHCA <- cutree(res.hc2008,5)#Identify memberships of each cl?ster
+member.HCA2008distHCA#view membership
+table(member.HCA2008distHCA) #use a table to show the number of memebrs in each cluster
+aggregate(HCA2008Scaled, list(member.HCA2008distHCA), median)#finding median to indicates which variables are playing importa?t roles in each cluster
+aggregate(HCA2008, list(member.HCA2008distHCA), mean)
+
+
+#Cut in 5 groups and color by groups
+fviz_dend(res.hc2008, k = 5, # Cut in four groups
+          cex = 0.5, # label size
+          k_colors = c("#2E9FDF", "#00AFBB","#3A9BE4", "#E7B800", "#FC4E07"),
+          color_labels_by_k = TRUE, # color labels by groups
+          rect = TRUE # Add rectangle around groups
+)
+
+#Cluster plot
+
+fviz_cluster(list(data = HCA2008, cluster = grp2008),
+             palette = c("#2E9FDF", "#00AFBB","#3A9BE4", "#E7B800", "#FC4E07"),
+             ellipse.type = FALSE, # Concentration ellipse
+             repel = TRUE, # Avoid label overplotting (slow)
+             show.clust.cent = FALSE, ggtheme = theme_minimal())
+
+
+###############Silo Analysis=================
+
+
+#use the function eclust() [enhanced clustering, in factoextra]
+
+# Hierarchical clustering
+hc.res2008 <- eclust(HCA2008Scaled, "hclust", k = 5, hc_metric = "euclidean",
+                     hc_method = "ward.D2", graph = FALSE)
+
+
+# Visualize dendrograms
+fviz_dend(hc.res2008, show_labels = FALSE,
+          palette = "jco", as.ggplot = TRUE)
+
+fviz_silhouette(hc.res2008, palette = "jco",
+                ggtheme = theme_classic())
+
+
+#Silhouette information can be extracted as follow:
+# Silhouette information
+
+silinfo2008 <- hc.res2008$silinfo
+
+names(silinfo2008)
+
+
+# Silhouette widths of each observation
+
+head(silinfo2008$widths[, 1:3], 35)
+
+
+silhouette_withs2008 <- head(silinfo2008$widths[, 1:3], 35)
+
+write.csv(silhouette_withs2008, file = "silhouette_withs2008.csv")
+# Average silhouette width of each cluster
+
+silinfo2008$clus.avg.widths
+
+silhouette_cluster_withs2008 <- silinfo2008$clus.avg.widths
+
+write.csv(silhouette_cluster_withs2008, file = "silhouette_cluster_withs2008.csv")
+
+# The total average (mean of all individual silhouette widths)
+silinfo2008$avg.width
+
+# The size of each clusters
+hc.res2008$size
+
+# Silhouette width of observation
+sil2008 <- hc.res2008$silinfo$widths[, 1:3]
+
+# Objects with negative silhouette
+neg_sil_index2008 <- which(sil2008[, 'sil_width'] < 0)
+
+sil2008[neg_sil_index2008, , drop = FALSE]
+
+neg_cases_2008 <- sil2008[neg_sil_index2008, , drop = FALSE]
+
+
+write.csv(neg_cases_2008, file = "silhouette_neg_cases_2008.csv")
+
+
+
+#######Visualizing Dendrograms#######
+
+#Compute distances and hierarchical clustering
+dd2008 <- dist(scale(HCA2008), method = "euclidean")
+
+hc2008 <- hclust(dd2008, method = "ward.D2")
+
+fviz_dend(hc2008, k = 5, # Cut in five groups
+          cex = 0.5, # label size
+          main = "Cluster Dend?ogram 2008",
+          xlab = "Cases", ylab = "Distance", sub = "Five (5) Cluster Groups",
+          k_colors = c("#2E9FDF", "#00AFBB", "#9be43a", "#E7B800", "#FC4E07"),
+          color_labels_by_k = TRUE, # color labels by groups
+          rect = TRUE, # ?dd rectangle around groups
+          rect_border = c("#2E9FDF", "#00AFBB","#9be43a", "#E7B800", "#FC4E07"),
+          rect_fill = TRUE,
+          ggtheme = theme_gray() # Change theme
+)
+
+require("igraph")
+fviz_dend(hc2008, k = 5, k_colors = "jco",
+         type = "phylogenic", repel = TRUE) #plot a phylogenic-like tree
+
+
+##plotting sub-tree of dendrograms 
+
+# Create a plot of the whole dendrogram,
+# and extract the dendrogram data
+
+dend_plot2008 <- fviz_dend(hc2008, k = 5, # Cut in four groups
+                           cex = 0.5, # label size
+                           k_colors = "jco")
+
+dend_data2008 <- attr(dend_plot2008, "dendrogram") # Extract dendrogram data
+
+# Cut the dendrogram at height h = 9
+dend_cuts2008 <- cut(dend_data2008, h = 7.5)
+
+# Visualize ?he truncated version containing
+# two branches
+fviz_dend(dend_cuts2008$upper)
+
+# Plot subtree 1
+fviz_dend(dend_cuts2008$lower[[1]], main = "Subtree 1") #1st Cluster 
+
+# Plot subtree 2
+fviz_dend(dend_cuts2008$lower[[2]], main = "Subtree 2") #2nd Cluster 
+
+#?Plot subtree 3
+fviz_dend(dend_cuts2008$lower[[3]], main = "Subtree 2") #3rd Cluster 
+
+# Plot subtree 4
+fviz_dend(dend_cuts2008$lower[[4]], main = "Subtree 2") #4th Cluster 
+
+# Plot subtree 5
+fviz_dend(dend_cuts2008$lower[[5]], main = "Subtree 2") #5th Clus?er
+
+
+######Using Heatmaps#####
+
+#Enhanced heat maps: heatmap.2()
+library("gplots")
+heatmap.2(HCA2008Scaled, scale = "none", col = bluered(100),
+          trace = "none", density.info = "none")
+
+#Alternative Pretty heat maps: pheatmap()
+pheatmap(HCA2008Scaled, cutree_rows = 5)
+
+
+
+###correlation-based distance methods####
+#2008
+res.dist2008 <- get_dist(HCA2008Scaled, method = "pearson") 
+
+res.dist2008
+fviz_dist(res.dist2008, lab_size = 8)
+
+#correlating all variables
+round(cor(HCA2008Scaled), digits = 2)
+
+#multiple Scatterplot
+
+library(ggplot2)
+
+pairs(HCA2008Scaled)
+
+#improved correlation matrix
+
+#combination of correlation coefficients and correlation tests 
+
+#install.packages("correlation")
+library(correlation)
+
+results2008 <- correlation::correlation(HCA2008, include_factors = TRUE, method = "auto")
+
+results2008
+
+summary(results2008)
+
+#install.packages("GGally")
+
+library(GGally)
+
+ggpairs(HCA2008)
+
+
+
+sink()
+
+
+
+#######CLUSTER ANALYSIS FOR 2015##### 
+
+#log outputs
+
+sink("Outputs2015_HCAFinal.log", append=TRUE, split=TRUE)
+
+sizex <- function(x){
+  if (x ==0.1){
+    cat('X = 0.1')
+  } else if (x > 0.1){
+    cat('X is bigger than 0.1 ')
+  } else {
+    cat('X is smaller than 0.1')
+  }
+}
+
+x <- 1
+sizex(x)
+
+#simple approach 
+HCA_Dendrogram_2015 <- dist(HCA2015Scaled) #Standardised data with defualt distance matrix
+
+fitH2015 <- hclust(HCA_Dendrogram_2015 , "ward.D2") #cluster using wards m?thod
+
+plot(fitH2015, hang=-1) #plot cdendrogram 
+
+abline(h= 7.5, v= , col= "blue", lty=5) #Draw line for selected area
+
+rect.hclust(fitH2015, k = 5, border = "red") #select number of clusters and make K
+
+# Cut in 5 groups and color by groups
+fviz_dend(res.hc2015, k = 5, # Cut in four groups
+          cex = 0.5, # label size
+          k_colors = c("#2E9FDF", "#00AFBB", "#E7B800", "#FC4E07"),
+          color_labels_by_k = TRUE, # color labels by groups
+          rect = TRUE # Add rectangle around groups
+          )  
+
+
+## Robustness check - Choosing Number of Cluster Groups Using (Kmeans) ####
+
+# Compute cophentic distance
+res.coph2015 <- cophenetic(res.hc2015)
+
+# Correlation between cophenetic distance and
+# the original distance
+cor(res.dist2015, res.coph2015)
+
+
+##Number of clusters decided on: 5
+
+
+
+####Cut the dendrogram into different groups####
+
+# Cut tree into 4 groups
+grp2015 <- cutree(res.hc2015, k = 5)
+
+# Number of members in each cluster
+table(grp2015)
+
+
+# Get the names for cluster members
+rownames(HCA2015)[grp2015 == 1] #1st Cluster 
+rownames(HCA2015)[grp2015 == 2] #2nd Cluster
+rownames(HCA2015)[grp2015 == 3] #3rd Cluster
+rownames(HCA2015)[grp2015 == 4] #4th Cluster
+rownames(HCA2015)[grp2015 == 5] #5th Cluster
+
+#Alternative for viewing cluster members 
+member.HCA2015distHCA <- cutree(res.hc2015,5)#Identify memberships of each cluster
+member.HCA2015distHCA#view membership
+table(member.HCA2015distHCA) #use a table to show the number of memebrs in each cluster
+aggregate(HCA2015Scaled, list(member.HCA2015distHCA), median)#f?nding median to indicates which variables are playing important roles in each cluster
+
+
+#Cut in 5 groups and color by groups
+fviz_dend(res.hc2015, k = 5, # Cut in four groups
+          cex = 0.5, # label size
+          k_colors = c("#2E9FDF", "#00AFBB","#3A9BE4", "#E7B800", "#FC4E07"),
+          color_labels_by_k = TRUE, # color labels by groups
+          rect = TRUE # Add rectangle around groups
+)
+
+#Cluster plot
+
+fviz_cluster(list(data = HCA2015, cluster = grp2015),
+             palette = c("#2E9FDF", "#00AFBB","#3A9BE4", "#E7B800", "#FC4E07"),
+             ellipse.type = FALSE, # Concentration ellipse
+             repel = TRUE, # Avoid label overplotting (slow)
+             show.clust.cent = FALSE, ggtheme = theme_minimal())
+
+
+####Silo Analysis#############
+
+#use the function eclust() [enhanced clustering, in factoextra]
+
+# Hierarchical clustering
+hc.res2015 <- eclust(HCA2015Scaled, "hclust", k = 5, hc_metric = "euclidean",
+                     hc_method = "ward.D2", graph = FALSE)
+
+
+# Visualize dendrograms
+fviz_dend(hc.res2015, show_labels = FALSE,
+          palette = "jco", as.ggplot = TRUE)
+
+fviz_silhouette(hc.res2015, palette = "jco",
+                ggtheme = theme_classic())
+
+
+#Silhouette information can be extracted as follow:
+# Silhouette information
+
+silinfo2015 <- hc.res2015$silinfo
+
+names(silinfo2015)
+
+
+# Silhouette widths of each observation
+
+head(silinfo2015$widths[, 1:3], 35)
+
+
+silhouette_withs2015 <- head(silinfo2015$widths[, 1:3], 35)
+
+write.csv(silhouette_withs2015, file = "silhouette_withs2015.csv")
+# Average silhouette width of each cluster
+
+silinfo2015$clus.avg.widths
+
+silhouette_cluster_withs2015 <- silinfo2015$clus.avg.widths
+
+write.csv(silhouette_cluster_withs2015, file = "silhouette_cluster_withs2015.csv")
+
+# The total average (mean of all individual silhouette widths)
+silinfo2015$avg.width
+
+# The size of each clusters
+hc.res2015$size
+
+# Silhouette width of observation
+sil2015 <- hc.res2015$silinfo$widths[, 1:3]
+
+# Objects with negative silhouette
+neg_sil_index2015 <- which(sil2015[, 'sil_width'] < 0)
+
+sil2015[neg_sil_index2015, , drop = FALSE]
+
+neg_cases_2015 <- sil2015[neg_sil_index2015, , drop = FALSE]
+
+
+write.csv(neg_cases_2015, file = "silhouette_neg_cases_2015.csv")
+
+
+#######Visualizing Dendrograms######
+
+# Compute distances and hierarchical clustering
+dd2015 <- dist(scale(HCA2015), method = "euclidean")
+
+hc2015 <- hclust(dd2015, method = "ward.D2")
+
+fviz_dend(hc2015, k = 5, # Cut in five groups
+          cex = 0.5, # label size
+          main = "Clu?ter Dendrogram 2015",
+          xlab = "Cases", ylab = "Distance", sub = "Five (5) Cluster Groups",
+          k_colors = c("#2E9FDF", "#00AFBB", "#9be43a", "#E7B800", "#FC4E07"),
+          color_labels_by_k = TRUE, # color labels by groups
+          rect = TRUE, # Add rectangle around groups
+          rect_border = c("#2E9FDF", "#00AFBB","#9be43a", "#E7B800", "#FC4E07"),
+          rect_fill = TRUE,
+          ggtheme = theme_gray() # Change theme
+)
+
+
+require("igraph")
+fviz_dend(hc2015, k = 5, k_colors = "jco",
+          type = "phylogenic", repel = TRUE) #plot a phylogenic-like tree
+
+
+
+##plotting sub-tree of dendrograms 
+
+# Create a plot of the whole dendrogram,
+# and extract the dendrogram data
+
+dend_plot2015 <- fviz_dend(hc2015, k = 5, # Cut in four groups
+                          cex = 0.5, # label size
+                           k_colors = "jco"
+)
+
+dend_data2015 <- attr(dend_plot2015, "dendrogram") # Extract dendrogram data
+
+# Cut the dendrogram at height h = 9
+dend_cuts2015 <- cut(dend_data2015, h = 7.5)
+
+#?Visualize the truncated version containing
+# two branches
+fviz_dend(dend_cuts2015$upper)
+
+
+# Plot subtree 1
+fviz_dend(dend_cuts2015$lower[[1]], main = "Subtree 1") #1st Cluster 
+
+
+# Plot subtree 2
+fviz_dend(dend_cuts2015$lower[[2]], main = "Subtree 2") #2n? Cluster 
+
+# Plot subtree 3
+fviz_dend(dend_cuts2015$lower[[3]], main = "Subtree 2") #3rd Cluster 
+
+# Plot subtree 4
+fviz_dend(dend_cuts2015$lower[[4]], main = "Subtree 2") #4th Cluster 
+
+# Plot subtree 5
+fviz_dend(dend_cuts2015$lower[[5]], main = "Subtree ?") #5th Cluster
+
+
+
+######Using Heatmaps#####
+
+#Enhanced heat maps: heatmap.2()
+library("gplots")
+heatmap.2(HCA2015Scaled, scale = "none", col = bluered(100),
+          trace = "none", density.info = "none")
+
+#Alternative Pretty heat maps: pheatmap()
+pheatmap(HCA2015Scaled, cutree_rows = 5)
+
+#Enhancing heatmaps using dendextend
+
+# order for rows
+Rowv2015 <- HCA2015 %>% scale %>% dist %>% hclust %>% as.dendrogram %>%
+  set("branches_k_color", k = 5) %>% set("branches_lwd", 1.2) %>%
+  ladderize
+
+
+###correlation?based distance methods####
+#2015
+res.dist2015 <- get_dist(HCA2015Scaled, method = "pearson") 
+
+res.dist2015
+fviz_dist(res.dist2015, lab_size = 8)
+
+
+#correlating all variables
+round(cor(HCA2015Scaled), digits = 2)
+
+
+#multiple Scatterplot
+
+library(ggplot2)
+
+pairs(HCA2015Scaled)
+
+
+#improved correlation matrix
+
+#combination of correation coefficients and correlation tests 
+
+library(correlation)
+
+results2015 <- correlation::correlation(HCA2015, include_factors = TRUE, method = "auto")
+
+results2015
+
+summary(results2015)
+
+library(GGally)
+
+ggpairs(HCA2015)
+
+
+sink()
+
+
+###########Visual comparison of two dendrograms - across time points########
+
+
+#######Comparing Dendrograms#######
+
+
+# Create three dendrograms
+dend1 <- as.dendrogram (hc2000)
+dend2 <- as.dendrogram (hc2008)
+dend3 <- as.dendrogram (hc2015)
+
+
+#plot dendrograms 
+plot(dend1, hang=-1) 
+
+plot(dend2, hang=-1) 
+
+plot(dend3, hang=-1)
+
+
+
+
+# Create a list to hold dendrograms for 2000/2008
+
+dend_list.1 <- dendlist(dend1, dend2) #for first two years
+
+# Align and plot ?wo dendrograms side by side
+
+dend_list.1 <- dendlist(highlight_branches(dend1), highlight_branches(dend2))
+tanglegram(dend_list.1, sort = TRUE, common_subtrees_color_lines = FALSE, highlight_distinct_edges  = FALSE)
+
+#Quality of Alignment. Note: Entangleme?t is a measure between 1 (full entanglement) and 0 (no entanglement).
+#A lower entanglement coefficient corresponds to a good alignment.
+tanglegram(dend1, dend2,
+           highlight_distinct_edges = FALSE, # Turn-off dashed lines
+           common_subtrees_color_lines = FALSE, # Turn-off line colors
+           common_subtrees_color_branches = TRUE, # Color common branches
+           main = paste("entanglement =", round(entanglement(dend_list.1), 2))
+)
+
+
+
+plot(dend_list.1, main = "2000 - 2008") #plot compari?m 
+
+
+
+
+#REPEAT FOR REMAINING TIME PERIODS
+
+# Create a list to hold dendrograms for 2008/2015
+
+dend_list.2 <- dendlist(dend2, dend3) #for second two years
+
+dend_list.2 <- dendlist(highlight_branches(dend2), highlight_branches(dend3))
+tanglegram(dend_list.2,sort = TRUE, common_subtrees_color_lines = FALSE, highlight_distinct_edges  = TRUE)
+
+tanglegram(dend2, dend3,
+           highlight_distinct_edges = FALSE, # Turn-off dashed lines
+           common_subtrees_color_lines = FALSE, # Turn-off line colors
+           common_subtrees_color_branches = TRUE, # Color common branches
+           main = paste("entanglement =", round(entanglement(dend_list.1), 2)))
+sort(labels(dend1)) == sort(labels(dend3))
+
+# Align and plot two dendrograms side by side
+
+plot(dend_list.2, main = "2008 - 2015") #plot comparism
+
+
+# Create a list to hold dendrograms for 2000 - 2015
+
+dend_list.3 <- dendlist(dend1, dend3) #for first and last year
+
+dend_list.3 <- dendlist(highlight_branches(dend1), highlight_branches(dend3))
+tanglegram(dend_list.3, sort = TRUE, common_subtrees_color_lines = FALSE, highlight_distinct_edges  = FALSE)
+
+
+# Align and plot two dendrograms side by side
+
+plot(dend_list.3, main = "2000 - 2015") #plot comparism 
+
+
+
+######Consistency of Clusters#####
+
+#install.packages("fpc")
+library(fpc)
+
+
+# Assuming you have already computed HCA2000Scaled, HCA2008Scaled, and HCA2015Scaled
+# and have clustering results in grp2000, grp2008, and grp2015
+
+# Compute dissimilarity matrices if not already done
+dist2000 <- dist(HCA2000Scaled)
+dist2008 <- dist(HCA2008Scaled)
+dist2015 <- dist(HCA2015Scaled)
+
+# Calculate the Adjusted Rand Index using cluster.stats
+cs_2000_2008 <- cluster.stats(dist2000, grp2000, grp2008)
+cs_2008_2015 <- cluster.stats(dist2008, grp2008, grp2015)
+
+
+#install.packages("mclust")
+library(mclust)
+
+rand_index_2000_2008 <- adjustedRandIndex(grp2000, grp2008)
+rand_index_2008_2015 <- adjustedRandIndex(grp2008, grp2015)
+
+print(rand_index_2000_2008)
+print(rand_index_2008_2015)
+
+
+
+#### Dendrogram Comparison#####
+library(dendextend)
+
+dend2000 <- as.dendrogram(res.hc2000)
+dend2008 <- as.dendrogram(res.hc2008)
+dend2015 <- as.dendrogram(res.hc2015)
+
+# Calculate dendrogram similarity
+dend_sim_2000_2008 <- cor_cophenetic(dend2000, dend2008)
+dend_sim_2008_2015 <- cor_cophenetic(dend2008, dend2015)
+
+print(dend_sim_2000_2008)
+print(dend_sim_2008_2015)
+
+
+####Silhouette Analysis Over Time####
+# Assuming you have already calculated silhouette information as silinfo2000, silinfo2008, and silinfo2015
+print(silinfo2000$avg.width)
+print(silinfo2008$avg.width)
+print(silinfo2015$avg.width)
+
+
+####Entanglement and Tanglegrams#####
+
+tanglegram(dend2000, dend2008, main = "2000 vs 2008 Comparison")
+tanglegram(dend2008, dend2015, main = "2008 vs 2015 Comparison")
+
+entanglement_score_2000_2008 <- entanglement(dend2000, dend2008)
+entanglement_score_2008_2015 <- entanglement(dend2008, dend2015)
+
+print(entanglement_score_2000_2008)
+print(entanglement_score_2008_2015)
+
+save.image("analysis_saved.RData")
+
+
+######Consistency of Clusters#####
+
+#install.packages("fpc")
+library(fpc)
+
+
+# Assuming you have already computed HCA2000Scaled, HCA2008Scaled, and HCA2015Scaled
+# and have clustering results in grp2000, grp2008, and grp2015
+
+# Compute dissimilarity matrices if not already done
+dist2000 <- dist(HCA2000Scaled)
+dist2008 <- dist(HCA2008Scaled)
+dist2015 <- dist(HCA2015Scaled)
+
+# Calculate the Adjusted Rand Index using cluster.stats
+cs_2000_2008 <- cluster.stats(dist2000, grp2000, grp2008)
+cs_2008_2015 <- cluster.stats(dist2008, grp2008, grp2015)
+
+
+#install.packages("mclust")
+library(mclust)
+
+rand_index_2000_2008 <- adjustedRandIndex(grp2000, grp2008)
+rand_index_2008_2015 <- adjustedRandIndex(grp2008, grp2015)
+
+print(rand_index_2000_2008)
+print(rand_index_2008_2015)
+
+
+
+#### Dendrogram Comparison#####
+library(dendextend)
+
+dend2000 <- as.dendrogram(res.hc2000)
+dend2008 <- as.dendrogram(res.hc2008)
+dend2015 <- as.dendrogram(res.hc2015)
+
+# Calculate dendrogram similarity
+dend_sim_2000_2008 <- cor_cophenetic(dend2000, dend2008)
+dend_sim_2008_2015 <- cor_cophenetic(dend2008, dend2015)
+
+print(dend_sim_2000_2008)
+print(dend_sim_2008_2015)
+
+
+####Silhouette Analysis Over Time####
+# Assuming you have already calculated silhouette information as silinfo2000, silinfo2008, and silinfo2015
+print(silinfo2000$avg.width)
+print(silinfo2008$avg.width)
+print(silinfo2015$avg.width)
+
+
+####Entanglement and Tanglegrams#####
+
+tanglegram(dend2000, dend2008, main = "2000 vs 2008 Comparison")
+tanglegram(dend2008, dend2015, main = "2008 vs 2015 Comparison")
+
+entanglement_score_2000_2008 <- entanglement(dend2000, dend2008)
+entanglement_score_2008_2015 <- entanglement(dend2008, dend2015)
+
+print(entanglement_score_2000_2008)
+print(entanglement_score_2008_2015)
+
+
