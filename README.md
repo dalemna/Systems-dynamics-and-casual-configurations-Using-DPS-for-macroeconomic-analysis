@@ -22,9 +22,20 @@ For more details, read the full paper linked above.
 ---
 
 ## Repository Contents
-- **Data**: Includes raw and processed datasets analyzed in the paper.
-- **R Code**: Scripts used for implementing the DPS method, including data preprocessing and analysis.
-- **Supplementary Documents**: Additional materials such as detailed methods and extended analyses.
+- **data/**: Contains datasets used in the analysis:
+  - `2000.xlsx`: Data for the year 2000.
+  - `2008.xlsx`: Data for the year 2008.
+  - `2015.xlsx`: Data for the year 2015.
+  - `Using_Dynamic_Pattern_Synthesis.xlsx`: Detailed results and analysis.
+
+- **rcode/**: R scripts and saved analysis files:
+  - `Final_HCA_Script.R`: Final script for hierarchical cluster analysis.
+  - `Consistency_of_Clusters.R`: Script for analyzing cluster consistency.
+  - `analysis_saved.RData`: Saved R workspace for quick loading.
+
+- **project/**: R project files:
+  - `DPS.Rproj`: RStudio project file for this analysis.
+  - `DPS.RData`: Saved project data.
 
 ---
 
